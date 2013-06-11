@@ -11,17 +11,16 @@
 
 
 @implementation PKQuickLookItem {
-    NSString *_fileExtension;
 }
 
-- (id)initWithContent:(NSString *)content fileExtension:(NSString*)fileExtension
+- (id)initWithData:(NSData *)data fileExtension:(NSString*)fileExtension
 {
     self = [super init];
     if(self)
     {
-        _content = content;
-        _fileExtension = fileExtension;
-        _helper = [PKQuickLookHelper defaultHelper];
+        _data = data;
+        _extension = [@"." stringByAppendingString: fileExtension];
+        _helper = [PKQuickLookHelper sharedHelper];
         _busy = NO;
     }
     return self;
@@ -59,44 +58,46 @@
 
 - (void)createTempFile
 {
-    NSString* template = [NSTemporaryDirectory() stringByAppendingString:[[PKQuickLookHelper defaultHelper] template]];
+    NSString* template = [NSTemporaryDirectory() stringByAppendingString:[[PKQuickLookHelper sharedHelper] template]];
     template = [template stringByAppendingString:@"XXXXXX"];
-    //TODO layout to helper ^
 
     const char* templateCString = [template fileSystemRepresentation];
 
     char *tempFileNameCString = (char*) malloc(strlen(templateCString) + 1);
     strcpy(tempFileNameCString, templateCString);
 
+    PKLog(@"Creating temporary file.");
     _fileDescriptor = mkstemp(tempFileNameCString);
 
     if(_fileDescriptor == -1)
     {
-        //TODO error
+        PKLog(@"Could not create temporary file. Aborting.");
+        return;
     }
 
     NSString* file = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:tempFileNameCString
                                                                                  length:strlen(tempFileNameCString)];
+    PKLog(@"Created temporary file at %@", file);
     NSFileHandle* fileHandle = [[NSFileHandle alloc] initWithFileDescriptor:_fileDescriptor];
 
+    NSError* err;
     [[NSFileManager defaultManager] moveItemAtPath:file
-                                            toPath:[file stringByAppendingString:_fileExtension] error:nil];
-    //TODO error
-    file = [file stringByAppendingString:_fileExtension]; //TODO argument should not have the dot
+                                            toPath:[file stringByAppendingString:_extension] error:&err];
+    if(err)
+    {
+        PKLog(@"Unable to process temporary file. Aborting.");
+    }
+    file = [file stringByAppendingString:_extension];
+    PKLog(@"Renamed file to %@", file);
 
     //write the file
+    PKLog(@"Writing data to file: %@", file);
     [fileHandle seekToEndOfFile];
-    [fileHandle writeData:[_content dataUsingEncoding:NSUTF8StringEncoding]];
+    [fileHandle writeData:_data];
     [fileHandle closeFile];
 
     free(tempFileNameCString);
 
     _tempFileURL = [NSURL fileURLWithPath:file];
 }
-
-- (void)dealloc
-{
-    //TODO
-}
-
 @end

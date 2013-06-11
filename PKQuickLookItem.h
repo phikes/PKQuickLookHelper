@@ -14,18 +14,19 @@
 
 @interface PKQuickLookItem : NSObject<QLPreviewItem>
 {
-    NSString* _content;
+    NSData* _data;
+    NSString* _extension;
 
     int _fileDescriptor;
 
     NSURL* _tempFileURL;
 
-    PKQuickLookHelper* _helper; //TODO allow change of hlper
+    PKQuickLookHelper* _helper;
 
     BOOL _busy;
 }
 
-- (id)initWithContent:(NSString*)content fileExtension:(NSString*)fileExtension;
+- (id)initWithData:(NSData *)data fileExtension:(NSString*)fileExtension;
 
 @property (strong, nonatomic) NSString* title;
 
