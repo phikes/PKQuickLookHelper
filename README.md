@@ -28,5 +28,3 @@ Showing the preview panel
 
     [[PKQuickLookHelper sharedHelper] toggleQuickLookWindow:self];
 
-
-* The source files are also documented!
