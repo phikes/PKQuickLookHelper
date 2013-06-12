@@ -6,6 +6,8 @@ PKQuickLookHelper enables Apple's QuickLook to be used with NSData instead of ac
 Usage
 ====
 
+Include the files in your AppCode/XCode Project and be sure you link against the **Quartz and QuickLook** frameworks.
+
 Initializing the sharedHelper
 ----
 
@@ -27,6 +29,14 @@ Showing the preview panel
 ----
 
     [[PKQuickLookHelper sharedHelper] toggleQuickLookWindow:self];
+
+Caching
+----
+
+It is possible to cache preview items, for later use. This is useful if there is a restricted set
+of items a user can perform the quicklook action on.
+
+    [[PKQuickLookHelper sharedHelper] cachePreviewItem:item];
 
 License
 ====
